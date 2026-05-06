@@ -12,6 +12,24 @@ class DiffError(Exception):
     """Raised when a diff cannot be completed due to parse or validation issues."""
 
 
+def _validate_path(path: Path, validate: bool) -> None:
+    """Check that *path* exists and, optionally, passes validation.
+
+    Raises
+    ------
+    DiffError
+        If the file does not exist or fails validation.
+    """
+    if not path.exists():
+        raise DiffError(f"File not found: {path}")
+
+    if validate:
+        result: ValidationResult = validate_file(path)
+        if not result.is_valid:
+            issues = "; ".join(str(i) for i in result.issues)
+            raise DiffError(f"Validation failed for {path}: {issues}")
+
+
 def diff_files(
     left: Union[str, Path],
     right: Union[str, Path],
@@ -36,15 +54,7 @@ def diff_files(
     right = Path(right)
 
     for path in (left, right):
-        if not path.exists():
-            raise DiffError(f"File not found: {path}")
-
-    if validate:
-        for path in (left, right):
-            result: ValidationResult = validate_file(path)
-            if not result.is_valid:
-                issues = "; ".join(str(i) for i in result.issues)
-                raise DiffError(f"Validation failed for {path}: {issues}")
+        _validate_path(path, validate)
 
     try:
         left_env = parse_env_file(left)
