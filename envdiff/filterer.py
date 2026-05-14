@@ -26,7 +26,15 @@ class FilterOptions:
 
 
 def filter_result(result: CompareResult, options: FilterOptions) -> CompareResult:
-    """Return a new CompareResult containing only diffs that satisfy *options*."""
+    """Return a new CompareResult containing only diffs that satisfy *options*.
+
+    Raises
+    ------
+    FilterError
+        If ``missing_only`` and ``mismatch_only`` are both set, or if a
+        pattern string is not a valid regular expression (when
+        ``use_regex=True``).
+    """
     if options.missing_only and options.mismatch_only:
         raise FilterError(
             "'missing_only' and 'mismatch_only' are mutually exclusive."
@@ -58,7 +66,23 @@ def filter_result(result: CompareResult, options: FilterOptions) -> CompareResul
 
 
 def _make_matcher(pattern: str, use_regex: bool):
-    """Return a callable that returns True when a key matches *pattern*."""
+    """Return a callable that returns True when a key matches *pattern*.
+
+    Parameters
+    ----------
+    pattern:
+        The pattern string to match against key names.
+    use_regex:
+        When *True* the pattern is compiled as a regular expression and
+        matched with ``re.search``; otherwise standard Unix shell-style
+        glob matching (``fnmatch``) is used.
+
+    Raises
+    ------
+    FilterError
+        If ``use_regex`` is *True* and *pattern* is not a valid regular
+        expression.
+    """
     if use_regex:
         try:
             compiled = re.compile(pattern)
