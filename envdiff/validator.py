@@ -44,6 +44,8 @@ def validate_env_file(path: str) -> ValidationResult:
         result.issues.append(ValidationIssue(0, "", f"Cannot read file: {exc}"))
         return result
 
+    seen_keys: dict = {}
+
     for lineno, raw_line in enumerate(raw_lines, start=1):
         line = raw_line.rstrip("\n")
         stripped = line.strip()
@@ -70,6 +72,17 @@ def validate_env_file(path: str) -> ValidationResult:
             result.issues.append(
                 ValidationIssue(lineno, line, "Key contains whitespace")
             )
+
+        if key in seen_keys:
+            result.issues.append(
+                ValidationIssue(
+                    lineno,
+                    line,
+                    f"Duplicate key '{key}' (first defined on line {seen_keys[key]})",
+                )
+            )
+        else:
+            seen_keys[key] = lineno
 
         value = value.strip()
         if value and value[0] in ('"', "'") and (
