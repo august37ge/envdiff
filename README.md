@@ -62,6 +62,17 @@ envdiff .env.development .env.production --keys-only
 | `--keys-only` | Show key differences without values |
 | `--quiet` | Only exit with a non-zero code on diff |
 | `--json` | Output results as JSON |
+| `--ignore KEY` | Exclude a specific key from comparison (repeatable) |
+
+---
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | No differences found |
+| `1` | Differences detected |
+| `2` | Invalid arguments or file not found |
 
 ---
 
