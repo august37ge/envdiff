@@ -5,6 +5,9 @@ from typing import Any, Dict
 from envdiff.comparator import CompareResult
 
 
+FORMATS = ("text", "json")
+
+
 def format_result(result: CompareResult, fmt: str = "text", show_values: bool = False) -> str:
     """Return a formatted string representation of a CompareResult.
 
@@ -12,7 +15,14 @@ def format_result(result: CompareResult, fmt: str = "text", show_values: bool = 
         result: The comparison result to format.
         fmt: Output format — ``"text"`` or ``"json"``.
         show_values: When True, include left/right values in text output.
+
+    Raises:
+        ValueError: If *fmt* is not a supported format string.
     """
+    if fmt not in FORMATS:
+        raise ValueError(
+            f"Unsupported format {fmt!r}. Choose one of: {', '.join(FORMATS)}"
+        )
     if fmt == "json":
         return _format_json(result)
     return _format_text(result, show_values=show_values)
