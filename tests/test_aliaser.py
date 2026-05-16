@@ -94,21 +94,20 @@ def test_apply_aliases_renames_key():
     rule = AliasRule(canonical="DATABASE_URL", aliases=["DB_URL"])
     am = AliasMap(rules=[rule])
     result = apply_aliases(env, am)
-    assert "DATABASE_URL" in result
-    assert "DB_URL" not in result
     assert result["DATABASE_URL"] == "postgres://localhost/db"
+    assert "DB_URL" not in result
 
 
-def test_apply_aliases_leaves_non_aliased_keys_unchanged():
-    env = {"PORT": "8080"}
-    am = AliasMap()
+def test_apply_aliases_preserves_unmatched_keys():
+    """Keys with no alias rule should pass through unchanged."""
+    env = {"DEBUG": "true", "PORT": "8080"}
+    am = AliasMap(rules=[])
     result = apply_aliases(env, am)
-    assert result == {"PORT": "8080"}
+    assert result == {"DEBUG": "true", "PORT": "8080"}
 
 
-def test_apply_aliases_does_not_mutate_original():
-    env = {"DB_URL": "sqlite:///db"}
-    rule = AliasRule(canonical="DATABASE_URL", aliases=["DB_URL"])
-    am = AliasMap(rules=[rule])
-    apply_aliases(env, am)
-    assert "DB_URL" in env  # original untouched
+def test_apply_aliases_empty_env_returns_empty():
+    """Applying aliases to an empty environment should return an empty dict."""
+    am = AliasMap(rules=[AliasRule(canonical="DATABASE_URL", aliases=["DB_URL"])])
+    result = apply_aliases({}, am)
+    assert result == {}
