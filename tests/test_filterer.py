@@ -74,3 +74,17 @@ def test_metadata_preserved():
     out = filter_result(result, FilterOptions())
     assert out.left_path == "a.env"
     assert out.right_path == "b.env"
+
+
+def test_empty_result_returns_empty_diffs():
+    """Filtering a result with no diffs should always return an empty diff list."""
+    result = _make_result()
+    for opts in [
+        FilterOptions(),
+        FilterOptions(missing_only=True),
+        FilterOptions(mismatch_only=True),
+        FilterOptions(pattern="DB_*"),
+        FilterOptions(exclude_pattern="PORT"),
+    ]:
+        out = filter_result(result, opts)
+        assert out.diffs == [], f"Expected empty diffs for options {opts}"
