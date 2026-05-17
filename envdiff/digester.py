@@ -58,3 +58,33 @@ def digest_file(path: str | Path) -> DigestResult:
 def digests_match(left: str | Path, right: str | Path) -> bool:
     """Return *True* when both files produce the same digest."""
     return digest_file(left).digest == digest_file(right).digest
+
+
+def digest_string(content: str) -> str:
+    """Compute a digest from a raw .env string without touching the filesystem.
+
+    This is useful for hashing in-memory content, e.g. values fetched from a
+    secrets manager or constructed programmatically.
+
+    Parameters
+    ----------
+    content:
+        The raw text of a .env file.
+
+    Returns
+    -------
+    str
+        A hex SHA-256 digest of the canonical representation.
+
+    Raises
+    ------
+    DigestError
+        If the content cannot be parsed.
+    """
+    try:
+        env = parse_env_file(content, from_string=True)
+    except EnvParseError as exc:
+        raise DigestError(str(exc)) from exc
+
+    raw = _canonical_bytes(env)
+    return hashlib.sha256(raw).hexdigest()
